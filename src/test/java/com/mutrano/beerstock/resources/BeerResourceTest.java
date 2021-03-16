@@ -1,6 +1,8 @@
 package com.mutrano.beerstock.resources;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,7 +22,10 @@ import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import com.mutrano.beerstock.builders.BeerDTOBuilder;
 import com.mutrano.beerstock.dto.BeerDTO;
+import com.mutrano.beerstock.repositories.BeerRepository;
+import com.mutrano.beerstock.resources.exceptions.ResourceExceptionHandler;
 import com.mutrano.beerstock.services.BeerService;
+import com.mutrano.beerstock.services.exceptions.ResourceNotFoundException;
 import com.mutrano.beerstock.utils.JsonConvertion;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,7 +36,10 @@ class BeerResourceTest {
 
 	@Mock
 	private BeerService beerService;
-
+	
+	@Mock
+	private BeerRepository beerRepository;
+	
 	@InjectMocks
 	private BeerResource beerResource;
 
@@ -39,7 +47,9 @@ class BeerResourceTest {
 	void setUp() {
 		mockMvc = MockMvcBuilders.standaloneSetup(beerResource)
 				.setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-				.setViewResolvers((s, locale) -> new MappingJackson2JsonView()).build();
+				.setViewResolvers((s, locale) -> new MappingJackson2JsonView())
+				.setControllerAdvice(new ResourceExceptionHandler())
+				.build();
 	}
 
 	@Test
@@ -70,5 +80,30 @@ class BeerResourceTest {
 				.andExpect(status()
 				.isBadRequest());
 
+	}
+	@Test
+	void whenBeerNameIsInformedABeerMustBeReturned() throws Exception {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.build();
+		//when
+		when(beerService.findByName(beerDTO.getName())).thenReturn(beerDTO);
+		//thenThrow(new ResourceNotFoundException(beerDTO.getName())
+		mockMvc.perform(MockMvcRequestBuilders.get("/Beers/"+beerDTO.getName())
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(beerDTO.getName())))
+                .andExpect(jsonPath("$.brand", is(beerDTO.getBrand())))
+                .andExpect(jsonPath("$.beerType", is(beerDTO.getBeerType().toString())));
+	}
+	@Test
+	void whenUnregisteredBeerNameIsInformedThenNotFoundStatusIsReturned() throws Exception {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.build();
+		//when
+		when(beerService.findByName(beerDTO.getName())).thenThrow(new ResourceNotFoundException(beerDTO.getName()));
+		//then
+		mockMvc.perform(MockMvcRequestBuilders.get("/Beers/"+beerDTO.getName())
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
 	}
 }

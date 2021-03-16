@@ -22,7 +22,7 @@ public class BeerDTO implements Serializable{
 	@NotNull(message="")
 	private Integer max;
 
-	@NotNull(message="")
+	@NotNull(message="Quantity must not be null.")
 	private Integer quantity;
 
 	@NotNull(message = "")

@@ -9,6 +9,7 @@ import com.mutrano.beerstock.dto.BeerDTO;
 import com.mutrano.beerstock.entities.Beer;
 import com.mutrano.beerstock.repositories.BeerRepository;
 import com.mutrano.beerstock.services.exceptions.BeerAlreadyRegisteredException;
+import com.mutrano.beerstock.services.exceptions.ResourceNotFoundException;
 
 @Service
 public class BeerService {
@@ -22,9 +23,9 @@ public class BeerService {
 		BeerDTO beerDTO = new BeerDTO(insertedBeer);
 		return beerDTO;
 	}
-	public BeerDTO findByName(String name) {
+	public BeerDTO findByName(String name) throws ResourceNotFoundException {
 		Optional<Beer> optFoundBeer = beerRepository.findByName(name);
-		BeerDTO beerDTO = new BeerDTO(optFoundBeer.orElseThrow());
+		BeerDTO beerDTO = new BeerDTO(optFoundBeer.orElseThrow( () -> new ResourceNotFoundException(name) ));
 		return beerDTO;
 	}
 	public void verifyIfAlreadyExists(String name) throws BeerAlreadyRegisteredException{

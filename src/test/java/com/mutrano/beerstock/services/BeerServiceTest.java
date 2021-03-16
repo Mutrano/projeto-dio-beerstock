@@ -4,11 +4,11 @@ package com.mutrano.beerstock.services;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +21,7 @@ import com.mutrano.beerstock.dto.BeerDTO;
 import com.mutrano.beerstock.entities.Beer;
 import com.mutrano.beerstock.repositories.BeerRepository;
 import com.mutrano.beerstock.services.exceptions.BeerAlreadyRegisteredException;
+import com.mutrano.beerstock.services.exceptions.ResourceNotFoundException;
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -63,7 +64,29 @@ class BeerServiceTest {
 		//when
 		when(beerRepository.findByName(expectedBeer.getName())).thenReturn(Optional.of(createdBeer));
 		//then
-		Assertions.assertThrows(BeerAlreadyRegisteredException.class, ()->beerService.insertBeer(createdBeerDTO));
+		assertThrows(BeerAlreadyRegisteredException.class, ()->beerService.insertBeer(createdBeerDTO));
+	}
+	@Test
+	void whenBeerNameIsInformedShouldReturnTheBeer() throws ResourceNotFoundException {
+		//given
+		BeerDTO foundBeerDTO = BeerDTOBuilder.build();
+		Beer foundBeer = beerService.fromDTO(foundBeerDTO);
+		String name = "Brahma puro malte";
+		//when
+		when(beerRepository.findByName(name)).thenReturn(Optional.of(foundBeer));
+		//then
+		BeerDTO returnedBeerDTO =  beerService.findByName(name);
+		
+		assertThat(returnedBeerDTO, is(equalTo(foundBeerDTO)));
+	}
+	@Test
+	void whenNotRegisteredBeerNameIsInformedAnExceptionShouldBeThrown() throws ResourceNotFoundException {
+		//given
+		BeerDTO foundBeerDTO = BeerDTOBuilder.build();
+		//when
+		when(beerRepository.findByName(foundBeerDTO.getName())).thenReturn(Optional.empty());
+		//then
+		assertThrows(ResourceNotFoundException.class, () -> beerService.findByName(foundBeerDTO.getName()));
 	}
 
 }
