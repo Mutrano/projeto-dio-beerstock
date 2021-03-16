@@ -1,48 +1,72 @@
-package com.mutrano.beerstock.entities;
+package com.mutrano.beerstock.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.io.Serializable;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import com.mutrano.beerstock.entities.Beer;
 import com.mutrano.beerstock.enums.BeerType;
 
-@Entity
-public class Beer {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+public class BeerDTO implements Serializable{
 	
-	@Column(nullable=true)
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
+	@NotEmpty(message="")
 	private String name;
 	
-	@Column(nullable = true)
+	@NotEmpty(message="")
 	private String brand;
-
-	@Column(nullable = true)
+	
+	@NotNull(message="")
 	private Integer max;
 
-	@Column(nullable = true)
+	@NotNull(message="")
 	private Integer quantity;
 
-	@Enumerated
-	@Column(nullable = true)
+	@NotNull(message = "")
 	private BeerType beerType;
-	public Beer() {
+	
+	public BeerDTO() {
 		
 	}
-	public Beer(Integer id,String brand,String name, Integer max, Integer quantity, BeerType beerType) {
-		this.id=id;
+	public BeerDTO(Beer obj) {
+		this.id=obj.getId();
+		this.name=obj.getName();
+		this.brand=obj.getBrand();
+		this.max=obj.getMax();
+		this.quantity=obj.getQuantity();
+		this.beerType=obj.getBeerType();
+	}
+
+	public BeerDTO(Integer id, @NotEmpty(message = "") String name,
+			@NotEmpty(message = "") String brand, @NotEmpty(message = "") Integer max,
+			@NotNull(message = "") Integer quantity, @NotNull(message = "") BeerType beerType) {
+		this.id = id;
+		this.name = name;
 		this.brand = brand;
-		this.name=name;
 		this.max = max;
 		this.quantity = quantity;
 		this.beerType = beerType;
 	}
-	
+
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String getBrand() {
 		return brand;
@@ -50,13 +74,6 @@ public class Beer {
 
 	public void setBrand(String brand) {
 		this.brand = brand;
-	}
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public Integer getMax() {
@@ -83,10 +100,6 @@ public class Beer {
 		this.beerType = beerType;
 	}
 
-	public Integer getId() {
-		return id;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -103,7 +116,7 @@ public class Beer {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Beer other = (Beer) obj;
+		BeerDTO other = (BeerDTO) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -111,5 +124,6 @@ public class Beer {
 			return false;
 		return true;
 	}
-
+	
+	
 }
