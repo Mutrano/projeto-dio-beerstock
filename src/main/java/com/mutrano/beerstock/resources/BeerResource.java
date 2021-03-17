@@ -4,9 +4,11 @@ import java.net.URI;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +47,10 @@ public class BeerResource {
 	ResponseEntity<List<BeerDTO>> findAll(){
 		List<BeerDTO> beerDTOs = beerService.findAll();
 		return ResponseEntity.ok().body(beerDTOs);
+	}
+	@DeleteMapping("/{id}")
+	ResponseEntity<Void> deleteById(@PathVariable @NotNull(message="Id must not be null") Integer id) throws ResourceNotFoundException{
+		beerService.delete(id);
+		return ResponseEntity.noContent().build();
 	}
 }

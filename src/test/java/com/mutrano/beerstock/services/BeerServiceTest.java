@@ -7,6 +7,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -116,5 +119,15 @@ class BeerServiceTest {
 		//then
 		List<BeerDTO> foundListBeers = beerService.findAll();
 		assertThat(foundListBeers,is(empty()));
+	}
+	@Test
+	void whenBeerDeleteIsCalledThenABeerShouldBeDeleted() throws ResourceNotFoundException {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.build();
+		//when
+		doNothing().when(beerRepository).deleteById(beerDTO.getId());
+		//then
+		beerService.delete(beerDTO.getId());
+		verify(beerRepository,times(1)).deleteById(beerDTO.getId());
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.mutrano.beerstock.dto.BeerDTO;
@@ -42,6 +43,16 @@ public class BeerService {
 		List<BeerDTO> beersDTO = new ArrayList<>();
 		beersDTO = beers.stream().map(x-> new BeerDTO(x) ).collect(Collectors.toList());
 		return beersDTO;
+	}
+	
+	public void delete(Integer id) throws ResourceNotFoundException {
+		try {
+			beerRepository.deleteById(id);
+		}
+		catch(EmptyResultDataAccessException e) {
+			throw new ResourceNotFoundException(e.getMessage());
+		}
+		
 	}
 	
 	public Beer fromDTO(BeerDTO dto) {
