@@ -1,6 +1,7 @@
 package com.mutrano.beerstock.resources;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -39,5 +40,10 @@ public class BeerResource {
 	ResponseEntity<BeerDTO> findByName(@PathVariable String name) throws ResourceNotFoundException{
 		BeerDTO foundBeer = beerService.findByName(name);
 		return ResponseEntity.ok().body(foundBeer);
+	}
+	@GetMapping()
+	ResponseEntity<List<BeerDTO>> findAll(){
+		List<BeerDTO> beerDTOs = beerService.findAll();
+		return ResponseEntity.ok().body(beerDTOs);
 	}
 }

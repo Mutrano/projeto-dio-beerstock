@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
-
+import static org.hamcrest.Matchers.empty;
 import com.mutrano.beerstock.builders.BeerDTOBuilder;
 import com.mutrano.beerstock.dto.BeerDTO;
 import com.mutrano.beerstock.repositories.BeerRepository;
@@ -105,5 +107,31 @@ class BeerResourceTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/Beers/"+beerDTO.getName())
 				.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isNotFound());
+	}
+	@Test
+	void whenListBeerIsCalledThenReturnAListOfBeers() throws Exception {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.build();
+		//when
+		when(beerService.findAll()).thenReturn(Collections.singletonList(beerDTO));
+		//then
+		mockMvc.perform(MockMvcRequestBuilders.get("/Beers")
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.[0].name", is(beerDTO.getName())))
+				.andExpect(jsonPath("$.[0].brand", is(beerDTO.getBrand())))
+				.andExpect(jsonPath("$.[0].beerType", is(beerDTO.getBeerType().toString())));
+	}
+	@Test
+	void whenListBeerIsCalledThenReturnAnEmptyListOfBeers() throws Exception{
+		//given
+		
+		//when
+		when(beerService.findAll()).thenReturn(Collections.emptyList());
+		//then
+		mockMvc.perform(MockMvcRequestBuilders.get("/Beers")
+				.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$",is(empty())));
 	}
 }

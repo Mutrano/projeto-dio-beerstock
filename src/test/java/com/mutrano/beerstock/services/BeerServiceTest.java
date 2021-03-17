@@ -3,10 +3,14 @@ package com.mutrano.beerstock.services;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -89,4 +93,28 @@ class BeerServiceTest {
 		assertThrows(ResourceNotFoundException.class, () -> beerService.findByName(foundBeerDTO.getName()));
 	}
 
+	@Test
+	void whenListBeerIsCalledThenReturnAListOfBeers() {
+		//given
+		BeerDTO foundBeerDTO = BeerDTOBuilder.build();
+		Beer foundBeer = beerService.fromDTO(foundBeerDTO);
+
+		//when
+		when(beerRepository.findAll()).thenReturn(Collections.singletonList(foundBeer));
+		//then
+		List<BeerDTO> foundListBeers = beerService.findAll();
+		
+		assertThat(foundListBeers, is(not(empty())));
+		assertThat(foundListBeers.get(0),is(equalTo(foundBeerDTO)));
+	}
+	@Test
+	void whenListBeerisCalledThenReturnAnEmptyListOfBeers() {
+		//given
+		
+		//when
+		when(beerRepository.findAll()).thenReturn(Collections.emptyList());
+		//then
+		List<BeerDTO> foundListBeers = beerService.findAll();
+		assertThat(foundListBeers,is(empty()));
+	}
 }
