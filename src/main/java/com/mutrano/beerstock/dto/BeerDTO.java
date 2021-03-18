@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 
 import com.mutrano.beerstock.entities.Beer;
 import com.mutrano.beerstock.enums.BeerType;
@@ -20,9 +21,11 @@ public class BeerDTO implements Serializable{
 	private String brand;
 	
 	@NotNull(message="")
+	@PositiveOrZero(message="Max quantity must be postive or zero")
 	private Integer max;
 
 	@NotNull(message="Quantity must not be null.")
+	@PositiveOrZero(message="Quantity must be positive or zero")
 	private Integer quantity;
 
 	@NotNull(message = "")

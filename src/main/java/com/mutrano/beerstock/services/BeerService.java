@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.mutrano.beerstock.dto.BeerDTO;
 import com.mutrano.beerstock.entities.Beer;
+import com.mutrano.beerstock.entities.exceptions.BeerStockExceededException;
 import com.mutrano.beerstock.repositories.BeerRepository;
 import com.mutrano.beerstock.services.exceptions.BeerAlreadyRegisteredException;
 import com.mutrano.beerstock.services.exceptions.ResourceNotFoundException;
@@ -51,10 +52,22 @@ public class BeerService {
 		}
 		catch(EmptyResultDataAccessException e) {
 			throw new ResourceNotFoundException(e.getMessage());
-		}
-		
+		}	
 	}
-	
+	public BeerDTO incrementStock(Integer id,Integer increment) throws ResourceNotFoundException, BeerStockExceededException {
+		Optional<Beer> optFoundBeer = beerRepository.findById(id);
+		Beer foundBeer = optFoundBeer.orElseThrow(() -> new ResourceNotFoundException());
+		foundBeer.increment(increment);
+		foundBeer = beerRepository.save(foundBeer);
+		return new BeerDTO(foundBeer);
+	}
+	public BeerDTO decrementStock(Integer id, Integer decrement) throws ResourceNotFoundException, BeerStockExceededException {
+		Optional<Beer> optFoundBeer = beerRepository.findById(id);
+		Beer foundBeer = optFoundBeer.orElseThrow(() -> new ResourceNotFoundException());
+		foundBeer.decrement(decrement);
+		foundBeer = beerRepository.save(foundBeer);
+		return new BeerDTO(foundBeer);
+	}
 	public Beer fromDTO(BeerDTO dto) {
 		Beer obj = new Beer(dto.getId(),dto.getBrand(), dto.getName(), dto.getMax(), dto.getQuantity(), dto.getBeerType());
 		return obj;

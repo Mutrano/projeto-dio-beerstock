@@ -24,8 +24,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mutrano.beerstock.builders.BeerDTOBuilder;
+import com.mutrano.beerstock.builders.QuantityDTOBuilder;
 import com.mutrano.beerstock.dto.BeerDTO;
+import com.mutrano.beerstock.dto.QuantityDTO;
 import com.mutrano.beerstock.entities.Beer;
+import com.mutrano.beerstock.entities.exceptions.BeerStockExceededException;
 import com.mutrano.beerstock.repositories.BeerRepository;
 import com.mutrano.beerstock.services.exceptions.BeerAlreadyRegisteredException;
 import com.mutrano.beerstock.services.exceptions.ResourceNotFoundException;
@@ -130,4 +133,54 @@ class BeerServiceTest {
 		beerService.delete(beerDTO.getId());
 		verify(beerRepository,times(1)).deleteById(beerDTO.getId());
 	}
+	@Test
+	void whenIncrementAfterSumIsLessThanMaxThenIncrementBeerStock() throws ResourceNotFoundException, BeerStockExceededException {
+		//given
+		BeerDTO incrementedBeerDTO = BeerDTOBuilder.build();
+		Beer incrementedBeer = beerService.fromDTO(incrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(44);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(quantityDTO.getQuantity() + incrementedBeer.getQuantity());
+		//when
+		when(beerRepository.findById(quantityDTO.getId())).thenReturn(Optional.of(incrementedBeer));
+		when(beerRepository.save(incrementedBeer)).thenReturn(mockedBeer);
+		//then
+		incrementedBeerDTO = beerService.incrementStock(quantityDTO.getId(), quantityDTO.getQuantity());
+		assertThat(incrementedBeerDTO.getQuantity(), is(equalTo(mockedBeer.getQuantity()  )));
+		
+	}
+	
+	@Test
+	void whenIncrementAfterSumIsEqualsToMaxThenIncrementBeerStock() throws ResourceNotFoundException, BeerStockExceededException {
+		//given
+		BeerDTO incrementedBeerDTO = BeerDTOBuilder.build();
+		Beer incrementedBeer= beerService.fromDTO(incrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(45);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(quantityDTO.getQuantity() + incrementedBeer.getQuantity());
+		//when
+		when(beerRepository.findById(incrementedBeerDTO.getId())).thenReturn(Optional.of(incrementedBeer));
+		when(beerRepository.save(incrementedBeer)).thenReturn(mockedBeer);
+		//then
+		incrementedBeerDTO= beerService.incrementStock(incrementedBeer.getId(), quantityDTO.getQuantity());
+		assertThat(incrementedBeerDTO.getQuantity(),is(equalTo(mockedBeer.getQuantity() )));
+	
+	}
+	@Test
+	void whenIncrementAfterSumIsGreatherThanMaxThenThrowException() throws ResourceNotFoundException, BeerStockExceededException {
+		//given
+		BeerDTO incrementedBeerDTO = BeerDTOBuilder.build();
+		Beer incrementedBeer= beerService.fromDTO(incrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(46);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(quantityDTO.getQuantity() + incrementedBeer.getQuantity());
+		//when
+		when(beerRepository.findById(incrementedBeerDTO.getId())).thenReturn(Optional.of(incrementedBeer));
+		//then
+		assertThrows(BeerStockExceededException.class, ()-> beerService.incrementStock(incrementedBeer.getId(), quantityDTO.getQuantity()));
+	}
+		
 }

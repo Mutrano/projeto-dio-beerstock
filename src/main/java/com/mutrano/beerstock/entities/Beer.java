@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import com.mutrano.beerstock.entities.exceptions.BeerStockExceededException;
 import com.mutrano.beerstock.enums.BeerType;
 
 @Entity
@@ -43,7 +44,24 @@ public class Beer {
 		this.beerType = beerType;
 	}
 	
+	public void increment(Integer increment) throws BeerStockExceededException {
+		if(increment+quantity<=max) {
+			quantity += increment;
+		}
+		else {
+			throw new BeerStockExceededException(name);
+		}
 
+	}
+	public void decrement(Integer decrement) throws BeerStockExceededException  {
+		if(quantity-decrement>=0) {
+			quantity-=decrement;
+		}
+		else {
+			throw new BeerStockExceededException(name);
+		}
+		
+	}
 	public String getBrand() {
 		return brand;
 	}
