@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -203,18 +202,68 @@ class BeerResourceTest {
 	void whenIncrementBeerStockIsCalledWithIncrementAfterSumGreaterThanMaxThenBadRequestIsReturned() throws Exception {
 		//given
 		BeerDTO incrementedBeerDTO = BeerDTOBuilder.build();
-		BeerDTO mockedBeerDTO = BeerDTOBuilder.build();
-		
 		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
 		quantityDTO.setQuantity(46);
-		mockedBeerDTO.setQuantity(quantityDTO.getQuantity() + incrementedBeerDTO.getQuantity());
 		//when
-		when(beerService.incrementStock(incrementedBeerDTO.getId(), quantityDTO.getQuantity())).thenThrow(new BeerStockExceededException(incrementedBeerDTO.getName()));         
+		when(beerService.incrementStock(quantityDTO.getId(), quantityDTO.getQuantity())).thenThrow(new BeerStockExceededException(incrementedBeerDTO.getName()));         
 		//then
 		mockMvc.perform(MockMvcRequestBuilders.put("/Beers/"+quantityDTO.getId()+"/increment")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(JsonConvertion.asJsonString(quantityDTO)))
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.error", is(equalTo("Increment Exceeded Beer Stock"))));
+				.andExpect(jsonPath("$.error", is(equalTo("Increment Exceeded Beer Stock of "+incrementedBeerDTO.getName()))));
+	}
+	@Test
+	void whenDecrementBeerStockIsCalledWithDecrementAfterSubPositiveThenDecrementBeerStock() throws Exception {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		BeerDTO mockedBeerDTO = BeerDTOBuilder.build();
+		
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(4);
+		mockedBeerDTO.setQuantity(decrementedBeerDTO.getQuantity() - quantityDTO.getQuantity());
+		//when
+		when(beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity())).thenReturn(mockedBeerDTO);
+		//then
+		
+		mockMvc.perform(MockMvcRequestBuilders.put("/Beers/"+quantityDTO.getId()+"/decrement")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(JsonConvertion.asJsonString(quantityDTO)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.quantity", is(equalTo(mockedBeerDTO.getQuantity()))));
+	}
+	@Test
+	void whenDecrementBeerStockIsCalledWithDecrementAfterSubEqualsToZeroThenDecrementBeerStock() throws Exception {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		BeerDTO mockedBeerDTO = BeerDTOBuilder.build();
+		
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(5);
+		mockedBeerDTO.setQuantity(decrementedBeerDTO.getQuantity() - quantityDTO.getQuantity());
+		//when
+		when(beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity())).thenReturn(mockedBeerDTO);
+		//then
+		
+		mockMvc.perform(MockMvcRequestBuilders.put("/Beers/"+quantityDTO.getId()+"/decrement")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(JsonConvertion.asJsonString(quantityDTO)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.quantity", is(equalTo(mockedBeerDTO.getQuantity()))));
+	}
+	@Test
+	void whenDecrementBeerStockIsCalledWithDecrementAfterSubLessThanZeroThenBadRequestIsReturned() throws Exception {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(5);
+		//when
+		when(beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity())).thenThrow(new BeerStockExceededException(decrementedBeerDTO.getName()));
+		//then
+		mockMvc.perform(MockMvcRequestBuilders.put("/Beers/"+quantityDTO.getId()+"/decrement")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(JsonConvertion.asJsonString(quantityDTO)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error", is(equalTo("Decrement Exceeded Beer Stock of "+decrementedBeerDTO.getName()))));
 	}
 }

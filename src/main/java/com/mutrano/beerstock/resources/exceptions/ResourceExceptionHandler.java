@@ -43,11 +43,11 @@ public class ResourceExceptionHandler  {
 		String error;
 		String message;
 		if(method.equalsIgnoreCase("increment")) {
-			error="Increment Exceeded Beer Stock";
+			error="Increment Exceeded Beer Stock of "+expn.getMessage();
 			message="Try a lower value";
 		}
 		else {
-			error="Decrement Exceeded Beer Stock";
+			error="Decrement Exceeded Beer Stock of "+expn.getMessage();
 			message="Try a bigger value";
 		}
 		HttpStatus status = HttpStatus.BAD_REQUEST;

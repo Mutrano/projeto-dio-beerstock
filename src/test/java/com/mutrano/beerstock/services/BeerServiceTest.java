@@ -182,5 +182,51 @@ class BeerServiceTest {
 		//then
 		assertThrows(BeerStockExceededException.class, ()-> beerService.incrementStock(incrementedBeer.getId(), quantityDTO.getQuantity()));
 	}
+	@Test
+	void whenDecrementAfterSubIsPositiveThenDecrementBeerStock() throws ResourceNotFoundException, BeerStockExceededException {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		Beer decrementedBeer = beerService.fromDTO(decrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(4);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(decrementedBeer.getQuantity() -  quantityDTO.getQuantity());
+		//when
+		when(beerRepository.findById(quantityDTO.getId())).thenReturn(Optional.of(decrementedBeer));
+		when(beerRepository.save(decrementedBeer)).thenReturn(mockedBeer);
+		//then
+		decrementedBeerDTO = beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity());
+		assertThat(decrementedBeerDTO.getQuantity(), is(equalTo(mockedBeer.getQuantity())));
+	}
+	
+	@Test
+	void whenDecrementAfterSubIsEqualToZeroThenDecrementBeerStock() throws ResourceNotFoundException, BeerStockExceededException {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		Beer decrementedBeer = beerService.fromDTO(decrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(5);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(decrementedBeer.getQuantity() -  quantityDTO.getQuantity());
+		//when
+		when(beerRepository.findById(quantityDTO.getId())).thenReturn(Optional.of(decrementedBeer));
+		when(beerRepository.save(decrementedBeer)).thenReturn(mockedBeer);
+		//then
+		decrementedBeerDTO = beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity());
+		assertThat(decrementedBeerDTO.getQuantity(), is(equalTo(mockedBeer.getQuantity())));
+	}
+	@Test
+	void whenDecrementAfterSubIsLessThanZeroThenThrowException() {
+		//given
+		BeerDTO decrementedBeerDTO = BeerDTOBuilder.build();
+		Beer decrementedBeer = beerService.fromDTO(decrementedBeerDTO);
+		QuantityDTO quantityDTO = QuantityDTOBuilder.build();
+		quantityDTO.setQuantity(6);
+		Beer mockedBeer = beerService.fromDTO(BeerDTOBuilder.build());
+		mockedBeer.setQuantity(decrementedBeer.getQuantity() -  quantityDTO.getQuantity());
+		//when
+		when(beerRepository.findById(quantityDTO.getId())).thenReturn(Optional.of(decrementedBeer));
 		
+		assertThrows(BeerStockExceededException.class, ()-> beerService.decrementStock(quantityDTO.getId(), quantityDTO.getQuantity()));
+	}
 }
