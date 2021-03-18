@@ -14,13 +14,13 @@ public class BeerDTO implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	private Integer id;
-	@NotEmpty(message="")
+	@NotEmpty(message="Beer name must be not empty")
 	private String name;
 	
-	@NotEmpty(message="")
+	@NotEmpty(message="Brand name must be not empty")
 	private String brand;
 	
-	@NotNull(message="")
+	@NotNull(message="Max quantity must be not empty")
 	@PositiveOrZero(message="Max quantity must be postive or zero")
 	private Integer max;
 
@@ -28,7 +28,7 @@ public class BeerDTO implements Serializable{
 	@PositiveOrZero(message="Quantity must be positive or zero")
 	private Integer quantity;
 
-	@NotNull(message = "")
+	@NotNull(message = "Beer type must be not empty")
 	private BeerType beerType;
 	
 	public BeerDTO() {
