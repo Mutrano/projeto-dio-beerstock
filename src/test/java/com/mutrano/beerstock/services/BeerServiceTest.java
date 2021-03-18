@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import com.mutrano.beerstock.builders.BeerDTOBuilder;
 import com.mutrano.beerstock.builders.QuantityDTOBuilder;
@@ -132,6 +134,14 @@ class BeerServiceTest {
 		//then
 		beerService.delete(beerDTO.getId());
 		verify(beerRepository,times(1)).deleteById(beerDTO.getId());
+	}
+	@Test
+	void whenBeerDeleteIsCalledForAnUnregisteredBeerThenThrowAnException() throws ResourceNotFoundException {
+		//given
+		BeerDTO beerDTO = BeerDTOBuilder.build();
+		//when
+		doThrow(EmptyResultDataAccessException.class).when(beerRepository).deleteById(beerDTO.getId());
+		assertThrows(ResourceNotFoundException.class, ()->beerService.delete(beerDTO.getId()));
 	}
 	@Test
 	void whenIncrementAfterSumIsLessThanMaxThenIncrementBeerStock() throws ResourceNotFoundException, BeerStockExceededException {
